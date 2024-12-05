@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Automóveis</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+</head>
+<body>
+    <!-- Div para o efeito de desfoque -->
+    <div class="background-blur"></div>
+
+    <!-- Conteúdo principal acima do desfoque -->
+    <div class="content-container">
+        <h1 class="titulo">Cadastro de Automóveis</h1>
+        <div class="banner"></div>
+        
+        <div class="form-container">
+            <form id="carForm">
+                <input type="text" id="marca" placeholder="Marca" required>
+                <input type="text" id="modelo" placeholder="Modelo" required>
+                <input type="text" id="cor" placeholder="Cor" required>
+                <input type="text" id="placa" placeholder="Placa" required>
+                <input type="number" id="ano" placeholder="Ano de Fabricação" required>
+                <input type="number" id="km" placeholder="Km Rodada" required>
+                <button type="submit">Cadastrar Automóvel</button>
+            </form>
+            <div class="button-container">
+                <button onclick="window.location.href='lista_automoveis.html'">Ver Automóveis Cadastrados</button>
+            </div>
+            <!-- Exibição de erro se a placa já estiver cadastrada -->
+            <div id="errorMessage" style="color: red; display: none;">
+                O automóvel de placa <span id="errorPlaca"></span> já está no nosso banco de dados.
+            </div>
+            <!-- Exibição de erro para formato de placa inválido -->
+            <div id="formatErrorMessage" style="color: red; display: none;">
+                Formato de placa inválido. Certifique-se de usar o formato correto (ABC-1234 ou AAA-0A00).
+            </div>
+            <div id="yearErrorMessage" style="color: red; display: none;">
+                O veículo ainda não foi fabricado. Insira um ano até 2024.
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVI_6eyuDsko8EIoDGnKbFOp41YSEELdA",
+            authDomain: "cadastrodecarros.firebaseapp.com",
+            projectId: "cadastrodecarros",
+            storageBucket: "cadastrodecarros.appspot.com",
+            messagingSenderId: "777045635662",
+            appId: "1:777045635662:web:4833c9e54770375605491f",
+            measurementId: "G-2FGJE8S59F"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        
+
+        // Função para validar o formato da placa
+        function validarPlaca(placa) {
+            // Expressões regulares para validar os formatos de placa
+            const placaAntigaRegex = /^[A-Z]{3}-\d{4}$/;
+            const placaMercosulRegex = /^[A-Z]{3}-\d[A-Z]\d{2}$/;
+
+            // Verifica se a placa corresponde a um dos formatos válidos
+            if (placaAntigaRegex.test(placa) || placaMercosulRegex.test(placa)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        document.getElementById('carForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const marca = document.getElementById('marca').value;
+            const modelo = document.getElementById('modelo').value;
+            const cor = document.getElementById('cor').value;
+            const placa = document.getElementById('placa').value;
+            const ano = document.getElementById('ano').value;
+            const km = document.getElementById('km').value;
+
+            // Verifica se a placa está no formato correto
+            if (!validarPlaca(placa)) {
+                document.getElementById('formatErrorMessage').style.display = 'block';
+                return; // Impede o envio do formulário se o formato estiver incorreto
+            } else {
+                document.getElementById('formatErrorMessage').style.display = 'none';
+            }
+
+            // Verifica se a placa já existe no banco de dados
+            const q = query(collection(db, "automoveis"), where("placa", "==", placa));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                // Se a placa já estiver cadastrada
+                const errorMessage = document.getElementById('errorMessage');
+                const errorPlaca = document.getElementById('errorPlaca');
+                errorPlaca.textContent = placa;
+                errorMessage.style.display = 'block'; // Exibe a mensagem de erro
+            } else {
+                // Se a placa não estiver cadastrada, adiciona o novo automóvel
+                await addDoc(collection(db, "automoveis"), {
+                    marca,
+                    modelo,
+                    cor,
+                    placa,
+                    ano,
+                    km
+                });
+
+                // Limpa o formulário
+                document.getElementById('carForm').reset();
+                // Esconde a mensagem de erro caso haja
+                document.getElementById('errorMessage').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

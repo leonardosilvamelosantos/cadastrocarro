@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Automóveis</title>
+    <link rel="stylesheet" href="stylepag2.css">
+</head>
+<body>
+    <h1>Lista de Automóveis</h1>
+
+    <!-- Botão Voltar para o cadastro -->
+    <button class="voltar" onclick="window.location.href='index.html'">Voltar para Cadastro</button>
+
+
+    <!-- Container de pesquisa -->
+    <div id="searchContainer">
+        <input type="text" id="search" placeholder="Procurar automóvel pela placa...">
+        <button id="searchButton">Pesquisar</button>
+    </div>
+
+    <!-- Lista de automóveis -->
+    <ul id="carList">
+        <!-- Os itens da lista serão gerados dinamicamente via JavaScript -->
+    </ul>
+
+    <!-- Formulário de Edição (Oculto inicialmente) -->
+<div id="editarForm" style="display:none;">
+    <h2>Editar Automóvel</h2>
+    <input type="text" id="marca" placeholder="Marca">
+    <input type="text" id="modelo" placeholder="Modelo">
+    <input type="text" id="cor" placeholder="Cor">
+    <input type="text" id="placa" placeholder="Placa" readonly>
+    <input type="number" id="ano" placeholder="Ano">
+    <input type="number" id="km" placeholder="Quilometragem">
+    <button id="salvarButton">Salvar</button>
+    <button id="cancelarButton" onclick="cancelarEdicao()">Cancelar</button>
+</div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"; 
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAVI_6eyuDsko8EIoDGnKbFOp41YSEELdA",
+            authDomain: "cadastrodecarros.firebaseapp.com",
+            projectId: "cadastrodecarros",
+            storageBucket: "cadastrodecarros.appspot.com",
+            messagingSenderId: "777045635662",
+            appId: "1:777045635662:web:4833c9e54770375605491f",
+            measurementId: "G-2FGJE8S59F"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Função para buscar o docId pelo campo 'placa'
+        async function buscarDocIdPorPlaca(placa) {
+            const q = query(collection(db, "automoveis"), where("placa", "==", placa));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                return snapshot.docs[0].id;
+            } else {
+                return null;
+            }
+        }
+        // Função para listar automóveis
+        async function listarAutomoveis(queryFilter = null) {
+            const carList = document.getElementById('carList');
+            carList.innerHTML = ''; // Limpa a lista antes de preencher
+
+            let q = queryFilter ? query(collection(db, "automoveis"), where("placa", "==", queryFilter)) : collection(db, "automoveis");
+            const snapshot = await getDocs(q);
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const li = document.createElement('li');
+                li.textContent = `${data.marca} - ${data.modelo} - ${data.cor} - ${data.placa} - ${data.ano} - ${data.km}`;
+                
+                // Criando o botão "Editar"
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Editar';
+                editButton.classList.add('edit');
+                editButton.onclick = () => editarVeiculo(doc.id); // Passa o ID do documento (não a placa)
+
+                li.appendChild(editButton); // Adiciona o botão "Editar" ao lado do item
+
+                carList.appendChild(li); // Adiciona o item à lista
+            });
+        }
+
+        async function buscaPlaca(placa) {
+            // Referência à coleção
+            const collectionRef = collection(db, "automoveis");
+
+            // Criando a consulta com a cláusula `where`
+            const q = query(collectionRef, where("placa", "==", placa));
+
+            // Executando a consulta e verificando se algum resultado foi encontrado
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                const doc = querySnapshot.docs[0];
+                return {
+                    id: doc.id,
+                    data: doc.data()
+                };
+            } else {
+                console.log("Veículo não encontrado");
+                return null;
+            }
+        }
+
+        // Função para editar os dados do veículo
+        async function editarVeiculo(docId) {
+
+            // Busca os dados do veículo no banco de dados com base no ID do documento
+            const carroRef = doc(db, "automoveis", docId);
+            const docSnap = await getDoc(carroRef); 
+            console.log(docSnap);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // Preenche o formulário de edição com os dados do veículo
+                document.getElementById('marca').value = data.marca;
+                document.getElementById('modelo').value = data.modelo;
+                document.getElementById('cor').value = data.cor;
+                document.getElementById('placa').value = data.placa;
+                document.getElementById('ano').value = data.ano;
+                document.getElementById('km').value = data.km;
+
+                // Exibe o formulário de edição
+                document.getElementById('editarForm').style.display = 'block';
+            } else {
+                console.log("Veículo não encontrado");
+            }
+        }
+
+        async function salvarAlteracoes() {
+            const carro = {
+                marca: document.getElementById('marca').value,
+                modelo: document.getElementById('modelo').value,
+                cor: document.getElementById('cor').value,
+                placa: document.getElementById('placa').value,
+                ano: document.getElementById('ano').value,
+                km: document.getElementById('km').value,
+            };
+
+            const buscaResult = await buscaPlaca(carro.placa);
+            if (buscaResult) {
+                const carroRef = doc(db, "automoveis", buscaResult.id);
+                await updateDoc(carroRef, {
+                    marca: carro.marca,
+                    modelo: carro.modelo,
+                    cor: carro.cor,
+                    ano: carro.ano,
+                    km: carro.km,
+                });
+
+                console.log("Dados atualizados com sucesso");
+                // Recarregar a lista de veículos e ocultar o formulário de edição
+                listarAutomoveis();
+                document.getElementById('editarForm').style.display = 'none';
+            } else {
+                console.log("Erro ao encontrar o veículo para atualização");
+            }
+        }
+
+        // Função para cancelar a edição e ocultar o formulário
+        function cancelarEdicao() {
+            document.getElementById('editarForm').style.display = 'none';
+        }
+
+        // Adiciona o evento de click no botão "Salvar"
+        document.getElementById('salvarButton').addEventListener('click', salvarAlteracoes);
+
+        // Chama a função para listar os veículos ao carregar a página
+        window.onload = () => listarAutomoveis();
+
+        // Função de pesquisa pela placa
+        document.getElementById('searchButton').addEventListener('click', () => {
+            const searchTerm = document.getElementById('search').value;
+            listarAutomoveis(searchTerm);
+        });
+    </script>
+</body>
+</html>

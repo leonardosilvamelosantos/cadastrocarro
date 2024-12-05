@@ -1,0 +1,128 @@
+html, body {
+    height: 100%; /* Garante que o html e o body ocupem 100% da altura da tela */
+    margin: 0; /* Remove margens do body */
+}
+
+body {
+    background-image: url('imagemfundo.jpg');
+    background-size: cover; /* A imagem cobre toda a área */
+    background-position: center; /* Centraliza a imagem */
+    background-repeat: no-repeat; /* Não repete a imagem */
+    font-family: 'Roboto', sans-serif;
+    color: white;
+    position: relative;
+    overflow: hidden; /* Pode ser removido se não for necessário */
+}
+
+.banner {
+    background-image: url('banner.jpg'); /* Define a imagem de fundo */
+    background-position: center; /* Centraliza a imagem */
+    background-size: 100% auto; /* Estica a imagem horizontalmente, mantendo a proporção */
+    background-repeat: no-repeat; /* Evita que a imagem se repita */
+    height: 200px; /* Define a altura do banner */
+    margin: 20px 0; /* Espaçamento em cima e embaixo */
+    border-radius: 0px; /* Bordas arredondadas, se necessário */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); /* Sombra, se desejado */
+}
+
+.background-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(5px); /* Aplica o desfoque */
+    z-index: 1;
+}
+
+.content-container {
+    position: relative;
+    z-index: 2; /* Garante que o conteúdo fique acima do desfoque */
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.titulo {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 24px;
+    color: white;
+}
+
+form {
+    margin-bottom: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+input {
+    display: block;
+    margin: 10px 0;
+    padding: 10px;
+    width: 90%;
+    max-width: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: border-color 0.3s;
+}
+
+input:focus {
+    border-color: rgba(255, 255, 255, 1);
+}
+
+/* Estilos para o botão "Cadastrar Automóvel" */
+form button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #28a745; /* Verde */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+form button:hover {
+    background-color: #218838; /* Verde mais escuro no hover */
+    transform: scale(1.05);
+}
+
+form button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+/* Estilos para o botão "Ver Automóveis Cadastrados" */
+.button-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.button-container button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.button-container button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.button-container button:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
